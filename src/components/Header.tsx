@@ -53,8 +53,8 @@ export default function Header() {
             className="h-8 w-8 rounded-full object-cover ring-2 ring-white/10"
           />
           <div className="hidden sm:flex flex-col leading-tight">
-            <span className="text-sm font-medium">Aria Velasquez</span>
-            <span className="text-[11px] text-neutral-400">Product Lead</span>
+            <span className="text-sm font-medium">Jackson Jesionowski</span>
+            <span className="text-[11px] text-neutral-400">@NonProphet</span>
           </div>
         </div>
       </div>
