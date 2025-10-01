@@ -33,12 +33,12 @@ export default function Header() {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden sm:flex bg-neutral-900/70 ring-1 ring-white/10 rounded-xl p-1">
+        {/* <div className="hidden sm:flex bg-neutral-900/70 ring-1 ring-white/10 rounded-xl p-1">
           <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-300 bg-neutral-800/70">Day</button>
           <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-200">Week</button>
           <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-200">Month</button>
           <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-200">Year</button>
-        </div>
+        </div> */}
         <button className="hidden sm:flex p-2 rounded-xl bg-neutral-900/70 ring-1 ring-white/10 hover:bg-neutral-800/70">
           <Search className="w-5 h-5 text-neutral-300" strokeWidth={1.5} />
         </button>

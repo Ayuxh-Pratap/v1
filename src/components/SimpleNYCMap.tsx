@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useGetComplaintsQuery } from '@/services/nycDataApi';
+import { useGetNYCComplaintsQuery } from '@/lib/redux';
 import { MapPin } from 'lucide-react';
 
 export default function SimpleNYCMap() {
-  const { data: complaints, isLoading, error } = useGetComplaintsQuery({ limit: 1000 });
+  const { data: complaints, isLoading, error } = useGetNYCComplaintsQuery({ limit: 1000 });
   const [isClient, setIsClient] = useState(false);
   const [selectedComplaintType, setSelectedComplaintType] = useState('');
   const [selectedBorough, setSelectedBorough] = useState('');

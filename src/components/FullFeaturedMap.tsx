@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useGetNYCComplaintsQuery } from '@/lib/redux';
-import { MapPin, Filter, X, Search } from 'lucide-react';
+import { useGetNYCComplaintsQuery, useGetComplaintTypesQuery, useGetBoroughsQuery } from '@/lib/redux';
+import { MapPin, Filter, X, Search, RefreshCw } from 'lucide-react';
 
 // Dynamically import the map component to avoid SSR issues
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
@@ -11,24 +11,26 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 
-export default function InteractiveMap() {
-  const { data: complaints, isLoading, error } = useGetNYCComplaintsQuery({ limit: 2000 });
+export default function FullFeaturedMap() {
+  const { data: complaints, isLoading, error, refetch } = useGetNYCComplaintsQuery({ limit: 2000 });
+  const { data: complaintTypes } = useGetComplaintTypesQuery();
+  const { data: boroughs } = useGetBoroughsQuery();
+  
   const [selectedComplaintType, setSelectedComplaintType] = useState('');
   const [selectedBorough, setSelectedBorough] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLeafletLoaded, setIsLeafletLoaded] = useState(false);
 
-  // Get unique values for filters
-  const filterOptions = useMemo(() => {
-    if (!complaints) return { types: [], boroughs: [], statuses: [] };
-    
-    return {
-      types: [...new Set(complaints.map(c => c.complaint_type))].sort(),
-      boroughs: [...new Set(complaints.map(c => c.borough))].sort(),
-      statuses: [...new Set(complaints.map(c => c.status))].sort(),
-    };
-  }, [complaints]);
+  // Load Leaflet on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('leaflet').then(() => {
+        setIsLeafletLoaded(true);
+      });
+    }
+  }, []);
 
   // Filter complaints based on selected filters
   const filteredComplaints = useMemo(() => {
@@ -60,6 +62,13 @@ export default function InteractiveMap() {
       case 'in progress': return '#f59e0b'; // amber
       default: return '#6b7280'; // neutral
     }
+  };
+
+  const clearFilters = () => {
+    setSelectedComplaintType('');
+    setSelectedBorough('');
+    setSelectedStatus('');
+    setSearchTerm('');
   };
 
   if (isLoading) {
@@ -107,6 +116,12 @@ export default function InteractiveMap() {
             {filteredComplaints.length} locations
           </span>
           <button
+            onClick={() => refetch()}
+            className="p-2 rounded-xl bg-neutral-800/70 ring-1 ring-white/10 hover:bg-neutral-700/70"
+          >
+            <RefreshCw className="w-4 h-4 text-neutral-300" strokeWidth={1.5} />
+          </button>
+          <button
             onClick={() => setShowFilters(!showFilters)}
             className="p-2 rounded-xl bg-neutral-800/70 ring-1 ring-white/10 hover:bg-neutral-700/70"
           >
@@ -132,12 +147,20 @@ export default function InteractiveMap() {
         <div className="mb-4 p-4 bg-neutral-800/50 rounded-xl ring-1 ring-white/5">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-medium text-neutral-200">Filters</h4>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="p-1 rounded hover:bg-neutral-700/50"
-            >
-              <X className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearFilters}
+                className="px-3 py-1 text-xs bg-neutral-700/50 hover:bg-neutral-600/50 rounded-lg text-neutral-300"
+              >
+                Clear All
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-1 rounded hover:bg-neutral-700/50"
+              >
+                <X className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <select
@@ -146,7 +169,7 @@ export default function InteractiveMap() {
               className="px-3 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-lg text-neutral-100 text-sm focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
             >
               <option value="">All Types</option>
-              {filterOptions.types.slice(0, 15).map((type) => (
+              {complaintTypes?.slice(0, 15).map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -157,7 +180,7 @@ export default function InteractiveMap() {
               className="px-3 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-lg text-neutral-100 text-sm focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
             >
               <option value="">All Boroughs</option>
-              {filterOptions.boroughs.map((borough) => (
+              {boroughs?.map((borough) => (
                 <option key={borough} value={borough}>{borough}</option>
               ))}
             </select>
@@ -168,9 +191,9 @@ export default function InteractiveMap() {
               className="px-3 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-lg text-neutral-100 text-sm focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
             >
               <option value="">All Statuses</option>
-              {filterOptions.statuses.map((status) => (
-                <option key={status} value={status}>{status}</option>
-              ))}
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="In Progress">In Progress</option>
             </select>
           </div>
         </div>
@@ -191,11 +214,10 @@ export default function InteractiveMap() {
             const lng = parseFloat(complaint.longitude!);
             const statusColor = getStatusColor(complaint.status);
             
-            return (
-              <Marker
-                key={complaint.unique_key}
-                position={[lat, lng]}
-                icon={new window.L.DivIcon({
+            // Create custom icon safely
+            const createCustomIcon = () => {
+              if (isLeafletLoaded && typeof window !== 'undefined' && window.L) {
+                return new window.L.DivIcon({
                   className: 'custom-marker',
                   html: `<div style="
                     background-color: ${statusColor};
@@ -207,7 +229,16 @@ export default function InteractiveMap() {
                   "></div>`,
                   iconSize: [12, 12],
                   iconAnchor: [6, 6]
-                })}
+                });
+              }
+              return undefined;
+            };
+            
+            return (
+              <Marker
+                key={complaint.unique_key}
+                position={[lat, lng]}
+                icon={createCustomIcon()}
               >
                 <Popup>
                   <div className="p-2 min-w-[250px]">

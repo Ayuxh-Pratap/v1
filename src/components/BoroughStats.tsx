@@ -1,10 +1,19 @@
 'use client';
 
-import { useGetComplaintStatsQuery } from '@/services/nycDataApi';
+import { useGetComplaintStatsQuery } from '@/lib/redux';
 import { MapPin } from 'lucide-react';
 
-export default function BoroughStats() {
-  const { data: stats, isLoading, error } = useGetComplaintStatsQuery();
+interface BoroughStatsProps {
+  filters: {
+    complaint_type?: string;
+    borough?: string;
+    status?: string;
+    limit?: number;
+  };
+}
+
+export default function BoroughStats({ filters }: BoroughStatsProps) {
+  const { data: stats, isLoading, error } = useGetComplaintStatsQuery(filters);
 
   if (isLoading) {
     return (
@@ -29,7 +38,7 @@ export default function BoroughStats() {
     );
   }
 
-  const boroughData = Object.entries(stats.complaintsByBorough)
+  const boroughData = Object.entries(stats.byBorough)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 4);
 
@@ -58,7 +67,7 @@ export default function BoroughStats() {
             {count.toLocaleString()}
           </p>
           <p className="text-xs text-neutral-200 mt-1">
-            {((count / stats.totalComplaints) * 100).toFixed(1)}% of total
+            {((count / stats.total) * 100).toFixed(1)}% of total
           </p>
         </div>
       ))}

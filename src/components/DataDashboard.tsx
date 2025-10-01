@@ -1,25 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetComplaintStatsQuery } from '@/services/nycDataApi';
-import { Search, RefreshCw, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import ComplaintsChart from './ComplaintsChart';
+import { useGetComplaintStatsQuery, useGetComplaintTypesQuery, useGetBoroughsQuery } from '@/lib/redux';
+import { RefreshCw, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import BoroughStats from './BoroughStats';
-import SimpleNYCMap from './SimpleNYCMap';
+import WorkingMap from './WorkingMap';
+import EnhancedCharts from './EnhancedCharts';
+import AnalyticsDashboard from './AnalyticsDashboard';
 import ComplaintsTable from './ComplaintsTable';
 
 export default function DataDashboard() {
-  const { data: stats, refetch } = useGetComplaintStatsQuery();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBorough, setSelectedBorough] = useState('');
+  const [selectedComplaintType, setSelectedComplaintType] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
 
-  const boroughs = [
-    'MANHATTAN',
-    'BROOKLYN', 
-    'QUEENS',
-    'BRONX',
-    'STATEN ISLAND'
-  ];
+  // Create filter object for API calls
+  const filters = {
+    complaint_type: selectedComplaintType || undefined,
+    borough: selectedBorough || undefined,
+    status: selectedStatus || undefined,
+    limit: 2000
+  };
+
+  const { data: stats, refetch } = useGetComplaintStatsQuery(filters);
+  const { data: complaintTypes } = useGetComplaintTypesQuery();
+  const { data: boroughs } = useGetBoroughsQuery();
 
   return (
     <div className="space-y-6">
@@ -54,7 +60,7 @@ export default function DataDashboard() {
               <p className="text-xs text-neutral-400">Total Complaints</p>
             </div>
             <p className="text-2xl tracking-tight font-semibold">
-              {stats.totalComplaints.toLocaleString()}
+              {stats.total.toLocaleString()}
             </p>
           </div>
           
@@ -64,7 +70,7 @@ export default function DataDashboard() {
               <p className="text-xs text-neutral-400">Resolved</p>
             </div>
             <p className="text-2xl tracking-tight font-semibold">
-              {stats.complaintsByStatus['Closed']?.toLocaleString() || '0'}
+              {stats.byStatus['Closed']?.toLocaleString() || '0'}
             </p>
           </div>
           
@@ -74,7 +80,7 @@ export default function DataDashboard() {
               <p className="text-xs text-neutral-400">In Progress</p>
             </div>
             <p className="text-2xl tracking-tight font-semibold">
-              {stats.complaintsByStatus['In Progress']?.toLocaleString() || '0'}
+              {stats.byStatus['In Progress']?.toLocaleString() || '0'}
             </p>
           </div>
           
@@ -84,55 +90,92 @@ export default function DataDashboard() {
               <p className="text-xs text-neutral-400">Open</p>
             </div>
             <p className="text-2xl tracking-tight font-semibold">
-              {stats.complaintsByStatus['Open']?.toLocaleString() || '0'}
+              {stats.byStatus['Open']?.toLocaleString() || '0'}
             </p>
           </div>
         </div>
       )}
 
+      {/* Active Filters Indicator */}
+      {(selectedComplaintType || selectedBorough || selectedStatus) && (
+        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 ring-1 ring-emerald-500/20 rounded-xl">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          <span className="text-sm text-emerald-400 font-medium">
+            Filters Active: 
+            {selectedComplaintType && ` Type: ${selectedComplaintType}`}
+            {selectedBorough && ` Borough: ${selectedBorough}`}
+            {selectedStatus && ` Status: ${selectedStatus}`}
+          </span>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
-          <input
-            type="text"
-            placeholder="Search complaints..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 placeholder-neutral-400 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
-          />
-        </div>
-        
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-1">
+          <select
+            value={selectedComplaintType}
+            onChange={(e) => setSelectedComplaintType(e.target.value)}
+            className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
+          >
+            <option value="">All Types</option>
+            {complaintTypes?.slice(0, 10).map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          
           <select
             value={selectedBorough}
             onChange={(e) => setSelectedBorough(e.target.value)}
             className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
           >
             <option value="">All Boroughs</option>
-            {boroughs.map((borough) => (
+            {boroughs?.map((borough) => (
               <option key={borough} value={borough}>{borough}</option>
             ))}
           </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
+          >
+            <option value="">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+
+          <button
+            onClick={() => {
+              setSelectedComplaintType('');
+              setSelectedBorough('');
+              setSelectedStatus('');
+            }}
+            className="ml-auto px-4 py-2 bg-neutral-800/70 ring-1 ring-white/10 rounded-xl text-neutral-300 hover:bg-neutral-700/70 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm"
+          >
+            Clear All
+          </button>
         </div>
       </div>
 
-      {/* Charts and Stats */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <div className="xl:col-span-8">
-          <ComplaintsChart />
-        </div>
-        
-        <div className="xl:col-span-4 space-y-6">
-          <BoroughStats />
-        </div>
-      </div>
+      {/* Enhanced Charts */}
+      <EnhancedCharts filters={filters} />
 
-      {/* Simple NYC Map */}
-      <SimpleNYCMap />
+      {/* Analytics Dashboard */}
+      <AnalyticsDashboard filters={filters} />
+
+      {/* Borough Stats */}
+      <BoroughStats filters={filters} />
+
+      {/* Working NYC Map */}
+      <WorkingMap 
+        filters={filters} 
+        searchTerm={searchTerm} 
+        onSearchChange={setSearchTerm}
+      />
 
       {/* Complaints Table */}
-      <ComplaintsTable />
+      <ComplaintsTable filters={filters} searchTerm={searchTerm} />
     </div>
   );
 }

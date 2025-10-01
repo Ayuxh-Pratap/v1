@@ -1,12 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetComplaintsQuery } from '@/services/nycDataApi';
+import { useGetNYCComplaintsQuery } from '@/lib/redux';
 import { Search, ChevronDown, ChevronUp, Clock, AlertCircle } from 'lucide-react';
 
-export default function ComplaintsTable() {
-  const { data: complaints, isLoading, error } = useGetComplaintsQuery({ limit: 100 });
-  const [searchTerm, setSearchTerm] = useState('');
+interface ComplaintsTableProps {
+  filters: {
+    complaint_type?: string;
+    borough?: string;
+    status?: string;
+    limit?: number;
+  };
+  searchTerm: string;
+}
+
+export default function ComplaintsTable({ filters, searchTerm }: ComplaintsTableProps) {
+  const { data: complaints, isLoading, error } = useGetNYCComplaintsQuery(filters);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [selectedBorough, setSelectedBorough] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [sortField, setSortField] = useState('created_date');
@@ -57,13 +67,19 @@ export default function ComplaintsTable() {
   // Filter and sort data
   const filteredComplaints = complaints
     .filter(complaint => {
-      const matchesSearch = !searchTerm || 
+      const globalSearch = !searchTerm || 
         complaint.complaint_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
         complaint.descriptor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (complaint.incident_address && complaint.incident_address.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const localSearch = !localSearchTerm || 
+        complaint.complaint_type.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
+        complaint.descriptor.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
+        (complaint.incident_address && complaint.incident_address.toLowerCase().includes(localSearchTerm.toLowerCase()));
+      
       const matchesBorough = !selectedBorough || complaint.borough === selectedBorough;
       const matchesStatus = !selectedStatus || complaint.status === selectedStatus;
-      return matchesSearch && matchesBorough && matchesStatus;
+      return globalSearch && localSearch && matchesBorough && matchesStatus;
     })
     .sort((a, b) => {
       const aValue = a[sortField as keyof typeof a] || '';
@@ -108,10 +124,15 @@ export default function ComplaintsTable() {
           <input
             type="text"
             placeholder="Search complaints..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-neutral-800/70 ring-1 ring-white/10 rounded-lg text-neutral-100 placeholder-neutral-400 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm"
           />
+          {searchTerm && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-emerald-400">
+              Global Filter Active
+            </div>
+          )}
         </div>
         
         <select

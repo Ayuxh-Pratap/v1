@@ -1,13 +1,6 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { nycDataApi } from '../services/nycDataApi';
+import { makeStore } from '../lib/redux/store';
 
-export const store = configureStore({
-  reducer: {
-    [nycDataApi.reducerPath]: nycDataApi.reducer,
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(nycDataApi.middleware),
-});
+export const store = makeStore();
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

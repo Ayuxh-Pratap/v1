@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { useGetComplaintStatsQuery } from '@/services/nycDataApi';
+import { useGetComplaintStatsQuery } from '@/lib/redux';
 
 ChartJS.register(
   CategoryScale,
@@ -22,7 +22,7 @@ ChartJS.register(
 );
 
 export default function ComplaintsChart() {
-  const { data: stats, isLoading, error } = useGetComplaintStatsQuery();
+  const { data: stats, isLoading, error } = useGetComplaintStatsQuery({});
 
   if (isLoading) {
     return (
@@ -49,7 +49,7 @@ export default function ComplaintsChart() {
   if (!stats) return null;
 
   // Get top 10 complaint types
-  const topComplaints = Object.entries(stats.complaintsByType)
+  const topComplaints = Object.entries(stats.byType)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 10);
 
