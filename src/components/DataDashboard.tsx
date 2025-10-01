@@ -23,7 +23,7 @@ export default function DataDashboard() {
     limit: 2000
   };
 
-  const { data: stats, refetch } = useGetComplaintStatsQuery(filters);
+  const { data: stats, refetch, isFetching: statsFetching } = useGetComplaintStatsQuery(filters);
   const { data: complaintTypes } = useGetComplaintTypesQuery();
   const { data: boroughs } = useGetBoroughsQuery();
 
@@ -109,6 +109,21 @@ export default function DataDashboard() {
         </div>
       )}
 
+      {/* Loading Indicator */}
+      {/* {statsFetching && (
+        <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-emerald-500/10 to-sky-500/10 ring-1 ring-emerald-500/20 rounded-xl">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <span className="text-sm text-emerald-400 font-medium">Updating data...</span>
+          </div>
+          <div className="flex gap-1">
+            <div className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      )} */}
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2 flex-1">
@@ -159,23 +174,24 @@ export default function DataDashboard() {
       </div>
 
       {/* Enhanced Charts */}
-      <EnhancedCharts filters={filters} />
+      <EnhancedCharts filters={filters} isLoading={statsFetching} />
 
       {/* Analytics Dashboard */}
-      <AnalyticsDashboard filters={filters} />
+      <AnalyticsDashboard filters={filters} isLoading={statsFetching} />
 
       {/* Borough Stats */}
-      <BoroughStats filters={filters} />
+      <BoroughStats filters={filters} isLoading={statsFetching} />
 
       {/* Working NYC Map */}
       <WorkingMap 
         filters={filters} 
         searchTerm={searchTerm} 
         onSearchChange={setSearchTerm}
+        isLoading={statsFetching}
       />
 
       {/* Complaints Table */}
-      <ComplaintsTable filters={filters} searchTerm={searchTerm} />
+      <ComplaintsTable filters={filters} searchTerm={searchTerm} isLoading={statsFetching} />
     </div>
   );
 }

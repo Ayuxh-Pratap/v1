@@ -10,9 +10,10 @@ interface BoroughStatsProps {
     status?: string;
     limit?: number;
   };
+  isLoading?: boolean;
 }
 
-export default function BoroughStats({ filters }: BoroughStatsProps) {
+export default function BoroughStats({ filters, isLoading: externalLoading }: BoroughStatsProps) {
   const { data: stats, isLoading, error } = useGetComplaintStatsQuery(filters);
 
   if (isLoading) {

@@ -21,9 +21,10 @@ interface WorkingMapProps {
   };
   searchTerm: string;
   onSearchChange: (searchTerm: string) => void;
+  isLoading?: boolean;
 }
 
-export default function WorkingMap({ filters, searchTerm, onSearchChange }: WorkingMapProps) {
+export default function WorkingMap({ filters, searchTerm, onSearchChange, isLoading: externalLoading }: WorkingMapProps) {
   const { data: complaints, isLoading, error, refetch } = useGetNYCComplaintsQuery(filters);
   const { data: complaintTypes } = useGetComplaintTypesQuery();
   const { data: boroughs } = useGetBoroughsQuery();
@@ -271,7 +272,17 @@ export default function WorkingMap({ filters, searchTerm, onSearchChange }: Work
         </div>
       )}
       
-      <div className="h-96 rounded-xl overflow-hidden ring-1 ring-white/5">
+      <div className="h-96 rounded-xl overflow-hidden ring-1 ring-white/5 relative">
+        {/* Loading Overlay for Map */}
+        {externalLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm rounded-xl">
+            <div className="flex items-center gap-3 p-4 bg-neutral-800/90 ring-1 ring-white/10 rounded-xl">
+              <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+              <span className="text-sm text-emerald-400 font-medium">Updating map...</span>
+            </div>
+          </div>
+        )}
+        
         <MapContainer
           center={[40.7128, -74.0060]}
           zoom={11}

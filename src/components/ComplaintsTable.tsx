@@ -12,9 +12,10 @@ interface ComplaintsTableProps {
     limit?: number;
   };
   searchTerm: string;
+  isLoading?: boolean;
 }
 
-export default function ComplaintsTable({ filters, searchTerm }: ComplaintsTableProps) {
+export default function ComplaintsTable({ filters, searchTerm, isLoading: externalLoading }: ComplaintsTableProps) {
   const { data: complaints, isLoading, error } = useGetNYCComplaintsQuery(filters);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [selectedBorough, setSelectedBorough] = useState('');
@@ -111,7 +112,16 @@ export default function ComplaintsTable({ filters, searchTerm }: ComplaintsTable
   };
 
   return (
-    <div className="rounded-2xl bg-neutral-900/70 ring-1 ring-white/10 p-5">
+    <div className="rounded-2xl bg-neutral-900/70 ring-1 ring-white/10 p-5 relative">
+      {/* Loading Overlay */}
+      {externalLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
+          <div className="flex items-center gap-3 p-4 bg-neutral-800/90 ring-1 ring-white/10 rounded-xl">
+            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <span className="text-sm text-emerald-400 font-medium">Updating table...</span>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg tracking-tight font-semibold">Recent Complaints</h3>
         <span className="text-xs text-neutral-400">{filteredComplaints.length} complaints</span>

@@ -10,9 +10,10 @@ interface AnalyticsDashboardProps {
     status?: string;
     limit?: number;
   };
+  isLoading?: boolean;
 }
 
-export default function AnalyticsDashboard({ filters }: AnalyticsDashboardProps) {
+export default function AnalyticsDashboard({ filters, isLoading: externalLoading }: AnalyticsDashboardProps) {
   const { data: stats, isLoading, error } = useGetComplaintStatsQuery(filters);
 
   if (isLoading) {

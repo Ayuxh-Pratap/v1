@@ -35,9 +35,10 @@ interface EnhancedChartsProps {
     status?: string;
     limit?: number;
   };
+  isLoading?: boolean;
 }
 
-export default function EnhancedCharts({ filters }: EnhancedChartsProps) {
+export default function EnhancedCharts({ filters, isLoading: externalLoading }: EnhancedChartsProps) {
   const { data: stats, isLoading, error } = useGetComplaintStatsQuery(filters);
 
   if (isLoading) {
@@ -146,7 +147,16 @@ export default function EnhancedCharts({ filters }: EnhancedChartsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative">
+      {/* Loading Overlay */}
+      {externalLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
+          <div className="flex items-center gap-3 p-4 bg-neutral-800/90 ring-1 ring-white/10 rounded-xl">
+            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <span className="text-sm text-emerald-400 font-medium">Updating charts...</span>
+          </div>
+        </div>
+      )}
       {/* Complaints by Type - Bar Chart */}
       <div className="rounded-2xl bg-neutral-900/70 ring-1 ring-white/10 p-5">
         <h3 className="text-lg tracking-tight font-semibold mb-4">Complaints by Type</h3>
