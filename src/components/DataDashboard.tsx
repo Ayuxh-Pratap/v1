@@ -125,40 +125,43 @@ export default function DataDashboard() {
       )} */}
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex gap-2 flex-1">
-          <select
-            value={selectedComplaintType}
-            onChange={(e) => setSelectedComplaintType(e.target.value)}
-            className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
-          >
-            <option value="">All Types</option>
-            {complaintTypes?.slice(0, 10).map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-          
-          <select
-            value={selectedBorough}
-            onChange={(e) => setSelectedBorough(e.target.value)}
-            className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
-          >
-            <option value="">All Boroughs</option>
-            {boroughs?.map((borough) => (
-              <option key={borough} value={borough}>{borough}</option>
-            ))}
-          </select>
+      <div className="space-y-3">
+        {/* Mobile: Stack filters vertically, Desktop: Horizontal layout */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+            <select
+              value={selectedComplaintType}
+              onChange={(e) => setSelectedComplaintType(e.target.value)}
+              className="px-3 py-2.5 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm sm:text-base min-w-0 flex-1"
+            >
+              <option value="">All Types</option>
+              {complaintTypes?.slice(0, 10).map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+            
+            <select
+              value={selectedBorough}
+              onChange={(e) => setSelectedBorough(e.target.value)}
+              className="px-3 py-2.5 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm sm:text-base min-w-0 flex-1"
+            >
+              <option value="">All Boroughs</option>
+              {boroughs?.map((borough) => (
+                <option key={borough} value={borough}>{borough}</option>
+              ))}
+            </select>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none"
-          >
-            <option value="">All Statuses</option>
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="In Progress">In Progress</option>
-          </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-3 py-2.5 bg-neutral-900/70 ring-1 ring-white/10 rounded-xl text-neutral-100 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm sm:text-base min-w-0 flex-1"
+            >
+              <option value="">All Statuses</option>
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="In Progress">In Progress</option>
+            </select>
+          </div>
 
           <button
             onClick={() => {
@@ -166,7 +169,7 @@ export default function DataDashboard() {
               setSelectedBorough('');
               setSelectedStatus('');
             }}
-            className="ml-auto px-4 py-2 bg-neutral-800/70 ring-1 ring-white/10 rounded-xl text-neutral-300 hover:bg-neutral-700/70 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm"
+            className="px-4 py-2.5 bg-neutral-800/70 ring-1 ring-white/10 rounded-xl text-neutral-300 hover:bg-neutral-700/70 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none text-sm font-medium w-full sm:w-auto"
           >
             Clear All
           </button>
